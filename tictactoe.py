@@ -1,5 +1,7 @@
 import copy
+import os
 import sys
+import time
 import pygame
 import random
 import numpy as np
@@ -93,12 +95,12 @@ class Board:
 
 class AI:
 
-    def __init__(self, level=1, player=2):
+    def __init__(self, level=1, player=2, maximize=False):
         self.level = level
         self.player = player
+        self.maximize = maximize
 
     # --- RANDOM ---
-
     def rnd(self, board):
         empty_sqrs = board.get_empty_sqrs()
         idx = random.randrange(0, len(empty_sqrs))
@@ -154,16 +156,18 @@ class AI:
             return min_eval, best_move
 
     # --- MAIN EVAL ---
-    def eval(self, main_board):
-        if self.level == 0:
+    def eval(self, main_board, maximize=False):
+        if main_board.isempty():
+            print('random choice')
             # random choice
             eval = 'random'
             move = self.rnd(main_board)
         else:
             # minimax algo choice
-            eval, move = self.minimax(main_board, False)
+            print('minimax choice')
+            eval, move = self.minimax(main_board, maximize)
 
-        print(f'AI has chosen to mark the square in pos {move} with an eval of: {eval}')
+        print(f'{"AI_1" if maximize == True else "AI_2"} has chosen to mark the square in pos {move} with an eval of: {eval}')
 
         return move # row, col
 
@@ -178,7 +182,6 @@ class Game:
         self.show_lines()
 
     # --- DRAW METHODS ---
-
     def show_lines(self):
         # bg
         screen.fill( BG_COLOR )
@@ -209,7 +212,6 @@ class Game:
             pygame.draw.circle(screen, CIRC_COLOR, center, RADIUS, CIRC_WIDTH)
 
     # --- OTHER METHODS ---
-
     def make_move(self, row, col):
         self.board.mark_sqr(row, col, self.player)
         self.draw_fig(row, col)
@@ -229,72 +231,154 @@ class Game:
 
 def main():
 
-    # --- OBJECTS ---
+    print('Tic-Tac-Toe')
+    gameMode = input("Select the game mode(pvp/pva/ava): ")
 
-    game = Game()
-    board = game.board
-    ai = game.ai
+    if gameMode == 'pvp':
 
-    # --- MAINLOOP ---
+        # --- OBJECTS --
+        game = Game()
+        game.gamemode = gameMode
+        board = game.board
+        ai = game.ai
 
-    while True:
-        
-        # pygame events
-        for event in pygame.event.get():
+        # --- MAINLOOP ---
+        while True:
+            print('start of while')
 
-            # quit event
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+            print('before event')
+            # pygame events
+            for event in pygame.event.get():
 
-            # keydown event
-            if event.type == pygame.KEYDOWN:
+                # quit event
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
 
-                # g-change gamemode
-                if event.key == pygame.K_g:
-                    game.change_gamemode()
+                # keydown event
+                if event.type == pygame.KEYDOWN:
 
-                # r-restart
-                if event.key == pygame.K_r:
-                    game.reset()
-                    board = game.board
-                    ai = game.ai
+                    # r-restart
+                    if event.key == pygame.K_r:
+                        game.reset()
+                        board = game.board
+                        ai = game.ai
 
-                # 0-random ai
-                if event.key == pygame.K_0:
-                    ai.level = 0
-                
-                # 1-random ai
-                if event.key == pygame.K_1:
-                    ai.level = 1
+                # click event
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    pos = event.pos
+                    row = pos[1] // SQSIZE
+                    col = pos[0] // SQSIZE
+                    
+                    # human mark sqr
+                    if board.empty_sqr(row, col) and game.running:
+                        game.make_move(row, col)
 
-            # click event
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                pos = event.pos
-                row = pos[1] // SQSIZE
-                col = pos[0] // SQSIZE
-                
-                # human mark sqr
-                if board.empty_sqr(row, col) and game.running:
-                    game.make_move(row, col)
+                        if game.isover():
+                            game.running = False
 
-                    if game.isover():
-                        game.running = False
+            print('after event')
 
-
-        # AI initial call
-        if game.gamemode == 'ai' and game.player == ai.player and game.running:
-
-            # update the screen
             pygame.display.update()
 
-            # eval
-            row, col = ai.eval(board)
-            game.make_move(row, col)
+    elif gameMode == 'pva':
+        game = Game()
+        game.gamemode = 'ai'
+        board = game.board
+        ai = game.ai
 
-            if game.isover():
-                game.running = False
+        # --- MAINLOOP ---
+        while True:
+            
+            # pygame events
+            for event in pygame.event.get():
 
-        pygame.display.update()
+                # quit event
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                # keydown event
+                if event.type == pygame.KEYDOWN:
+
+                    # r-restart
+                    if event.key == pygame.K_r:
+                        game.reset()
+                        board = game.board
+                        ai = game.ai
+
+                # click event
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    pos = event.pos
+                    row = pos[1] // SQSIZE
+                    col = pos[0] // SQSIZE
+                    
+                    # human mark sqr
+                    if board.empty_sqr(row, col) and game.running:
+                        game.make_move(row, col)
+
+                        if game.isover():
+                            game.running = False
+
+
+            # AI initial call
+            if game.gamemode == 'ai' and game.player == ai.player and game.running:
+
+                # update the screen
+                pygame.display.update()
+
+                # eval
+                row, col = ai.eval(board)
+                game.make_move(row, col)
+
+                if game.isover():
+                    game.running = False
+
+            pygame.display.update()
+
+    elif gameMode == 'ava':
+        game = Game()
+        game.gamemode = 'ai'
+        board = game.board
+        ai = game.ai
+
+        # --- MAINLOOP ---
+        while True:
+
+            # AI initial call
+            if game.gamemode == 'ai' and game.running:
+
+                # update the screen
+                pygame.display.update()
+
+                maximize = True if game.player == 1 else False
+                # eval
+                row, col = ai.eval(board, maximize=maximize)
+                game.make_move(row, col)
+
+                if game.isover():
+                    game.running = False
+            
+            # pygame events
+            for event in pygame.event.get():
+
+                # quit event
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                # keydown event
+                if event.type == pygame.KEYDOWN:
+
+                    # r-restart
+                    if event.key == pygame.K_r:
+                        game.reset()
+                        board = game.board
+                        ai = game.ai
+
+            pygame.display.update()
+
+            time.sleep(2)
+
 
 main()
