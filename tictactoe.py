@@ -164,7 +164,7 @@ class AI:
             move = self.rnd(main_board)
         else:
             # minimax algo choice
-            print('minimax choice')
+            # print('minimax choice')
             eval, move = self.minimax(main_board, maximize)
 
         # print(f'{"AI_1" if maximize == True else "AI_2"} has chosen to mark the square in pos {move} with an eval of: {eval}')
