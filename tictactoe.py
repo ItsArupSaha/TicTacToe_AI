@@ -244,9 +244,6 @@ def main():
 
         # --- MAINLOOP ---
         while True:
-            print('start of while')
-
-            print('before event')
             # pygame events
             for event in pygame.event.get():
 
@@ -276,8 +273,6 @@ def main():
 
                         if game.isover():
                             game.running = False
-
-            print('after event')
 
             pygame.display.update()
 
@@ -378,7 +373,6 @@ def main():
 
             pygame.display.update()
 
-            time.sleep(2)
-
+            time.sleep(1)
 
 main()
