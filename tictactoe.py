@@ -168,6 +168,7 @@ class AI:
             eval, move = self.minimax(main_board, maximize)
 
         print(f'{"AI_1" if maximize == True else "AI_2"} has chosen to mark the square in pos {move} with an eval of: {eval}')
+        # print(move)
 
         return move # row, col
 
@@ -271,6 +272,9 @@ def main():
                     if board.empty_sqr(row, col) and game.running:
                         game.make_move(row, col)
 
+                        # printing states on CLI
+                        print(board.squares)
+
                         if game.isover():
                             game.running = False
 
@@ -312,6 +316,9 @@ def main():
                     if board.empty_sqr(row, col) and game.running:
                         game.make_move(row, col)
 
+                        # printing states on CLI
+                        print(board.squares)
+
                         if game.isover():
                             game.running = False
 
@@ -325,6 +332,8 @@ def main():
                 # eval
                 row, col = ai.eval(board)
                 game.make_move(row, col)
+                # printing states on CLI
+                print(board.squares)
 
                 if game.isover():
                     game.running = False
@@ -350,6 +359,9 @@ def main():
                 # eval
                 row, col = ai.eval(board, maximize=maximize)
                 game.make_move(row, col)
+
+                # printing states on CLI
+                print(board.squares)
 
                 if game.isover():
                     game.running = False
